@@ -1,6 +1,6 @@
-#Altoria
+#Autoria
 
-Matheus Aves de Andrade - Matricula: 20150105417
+Matheus Alves de Andrade - Matricula: 20150105417
 matheuseejam@hotmail.com
 
 #Introdução
