@@ -9,6 +9,7 @@ arquivo contendo 'n' expreções aritmeticas, e produz de saida um outro arquivo
 contendo o resultado de cada expreção linha por linha,
 ou uma mensagem de erro caso a expreção estiver mal formada.
 
-#OBS
-Esse readme é apenas uma introdução inicial para ser submetido ao repositorio
-remoto, o rpojeto atualmente está iniciando, mas não possui qualquer código.
+#Até agora...
+Até agora apenas as exessões estão sendo detectadas, o rograma é capaz de encontrar
+problemas na escrita da expreção e mostrar em que coluna está alem de qual é o
+problema encontrado. entretando isso ainda precisa ser melhor testado.
