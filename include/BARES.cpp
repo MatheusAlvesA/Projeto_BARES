@@ -5,11 +5,8 @@ void BARES::extrair_dados(std::string bruto) {
     //this->Infx2Posfx(bruto, inicio, x);
 }
 
-void BARES::Infx2Posfx(std::string bruto, long int inicio, long int fim) {
-    while(inicio < fim) {
-        
-        inicio++;
-    }
+QueueAr<int>* BARES::Infx2Posfx(QueueAr<int> *fila, StackINT pilha) {
+    return nullptr;
 }
 
 void BARES::converter_bruto_fila(std::string bruto) {
@@ -147,7 +144,7 @@ void BARES::processar(std::string nome) {
        try {
        this->extrair_dados(linha);
        std::cout << linha << std::endl; // debug
-       this->print();
+       //this->print(); // DEBUG
        }
        catch(ERRO erro) {
            int coluna = 0;
@@ -158,6 +155,49 @@ void BARES::processar(std::string nome) {
        }
      }
     arquivo.close();
+    // executando o processamento
+    QueueAr<int> *auxiliar = new QueueAr<int>(10);
+
+    QueueAr<int>  *posfix;
+    StackINT pilha_aux;
+    long int ptr_interno = -1;
+    long int ptr_final_interno;
+    int *fila = new int[10000];
+    long int capacidade = 0;
+    int resultado = 0;
+    for(; !this->simbolos->isEmpty(); capacidade++) fila[capacidade] = this->simbolos->dequeue();
+
+    for(ptr_final_interno = 0; ptr_final_interno < capacidade && fila[ptr_final_interno] != BARES::simbolo_token::_FECHAR; ptr_final_interno++)
+        if(fila[ptr_final_interno] == BARES::simbolo_token::_ABRIR)
+            ptr_interno = ptr_final_interno;
+    
+    while(ptr_interno >= 0) {
+        for(long int x = ptr_interno+1; fila[x] != BARES::simbolo_token::_FECHAR; x++) {
+            auxiliar->enqueue(fila[x]);
+            if(fila[x] > 40001) pilha_aux.push(fila[x]);
+        }
+        posfix = this->Infx2Posfx(auxiliar, pilha_aux);
+        // processar posfix e recolocar no vetor
+        fila[ptr_interno] = resultado;
+        for(long int x = ptr_interno+1; x < capacidade - (ptr_final_interno - ptr_interno) + 1;x++)
+            fila[x] = fila[x+(ptr_final_interno - ptr_interno) + 1];
+        capacidade = (ptr_final_interno - ptr_interno) + 1;
+        
+        ptr_interno = -1;
+       for(ptr_final_interno = 0; ptr_final_interno < capacidade && fila[ptr_final_interno] != BARES::simbolo_token::_FECHAR; ptr_final_interno++)
+        if(fila[ptr_final_interno] == BARES::simbolo_token::_ABRIR)
+            ptr_interno = ptr_final_interno;
+        }
+    
+      for(long int x = 0; x < capacidade; x++) {
+            auxiliar->enqueue(fila[x]);
+            if(fila[x] > 40001) pilha_aux.push(fila[x]);
+        }
+        posfix = this->Infx2Posfx(auxiliar, pilha_aux);
+        // processar posfix e recolocar no vetor
+    delete auxiliar;
+    delete posfix;
+    delete [] fila;
 }
 
 void BARES::print() {

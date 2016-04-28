@@ -91,8 +91,7 @@ class QueueAr : AbsQueue<Object>{
            delete [] fila;
            fila = new Object[10];
            capacidade = 10;
-           
-       }
+       };
 };
 
 #endif

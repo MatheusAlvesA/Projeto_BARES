@@ -10,6 +10,7 @@ contendo o resultado de cada expreção linha por linha,
 ou uma mensagem de erro caso a expreção estiver mal formada.
 
 #Até agora...
-Até agora apenas as exessões estão sendo detectadas, o rograma é capaz de encontrar
-problemas na escrita da expreção e mostrar em que coluna está alem de qual é o
-problema encontrado. entretando isso ainda precisa ser melhor testado.
+Até agora apenas as exessões estão sendo detectadas e uma estrutura lógica foi
+criada para dar suporte a fase final do processamento, onde ocorrerá a tradução
+de infixo para posfixo e finalmente o processamento das operações para
+obter o resultado final.

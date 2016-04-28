@@ -4,6 +4,7 @@
 #include <string>
 #include <stdexcept>
 #include "queuear.h"
+#include "stackint.h"
 
 class BARES {
 public:
@@ -30,7 +31,7 @@ public:
         _RESTO = 40005,
         _DIVIDIR = 40006,
         _SOMAR = 40007,
-        _SUBTRAIR = 40008      
+        _SUBTRAIR = 40008
     };
     void processar(std::string nome);
     void print();
@@ -46,7 +47,7 @@ private:
     // essa função gerencia o processo de converção de uma linha em duas pilhas que seram processadas pela função calcular
     void extrair_dados(std::string bruto);
     // converte a fila com os operando e operadores em duas pilhas separadas
-    void Infx2Posfx(std::string bruto, long int inicio, long int fim);
+    QueueAr<int> *Infx2Posfx(QueueAr<int> *fila, StackINT pilha);
 };
 
 class ERRO {
