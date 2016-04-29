@@ -10,7 +10,7 @@ contendo o resultado de cada expreção linha por linha,
 ou uma mensagem de erro caso a expreção estiver mal formada.
 
 #Até agora...
-Até agora apenas as exessões estão sendo detectadas e uma estrutura lógica foi
-criada para dar suporte a fase final do processamento, onde ocorrerá a tradução
-de infixo para posfixo e finalmente o processamento das operações para
-obter o resultado final.
+O algoritmo está concluido, porem não está apresentando o resultado correto,
+diversos pontos precisam ser melhorados e reescritos para obter um código mais inteligente.
+
+#Quase lá :)

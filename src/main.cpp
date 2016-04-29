@@ -22,8 +22,15 @@ int main(int argc, char** argv) {
     }
  
  BARES analizador;
- analizador.processar(nome);
+ std::string retorno = analizador.processar(nome);
+ std::cout << retorno;
  
+  std::ofstream arquivo; // instanciando um ponteiro pro arquivo
+  arquivo.open("SAIDA.txt"); // abrindo o arquivo
+  arquivo << retorno;
+  arquivo.close();
+  
+   std::cout << "\n\n>>>>>>>>>>>>> Arquivo gerado: \"SAIDA.txt\"\n";
     return (EXIT_SUCCESS);
 }
 

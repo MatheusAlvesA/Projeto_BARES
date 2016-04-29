@@ -2,6 +2,7 @@
 #define _BARES_H_
 
 #include <string>
+#include <sstream>
 #include <stdexcept>
 #include "queuear.h"
 #include "stackint.h"
@@ -33,26 +34,23 @@ public:
         _SOMAR = 40007,
         _SUBTRAIR = 40008
     };
-    void processar(std::string nome);
-    void print();
+    std::string processar(std::string nome);
+
 private:
     int size;
     QueueAr<int> *simbolos; // fila que armazena os valores
     
     // converte uma linha de string pura em uma fila de simbolos incluindo os operando e operadores na ordem que estavam na string original
     void converter_bruto_fila(std::string bruto);
-    // essa função extrai todos os numeros da linha colocandoos em um vetor que os armazenará na ordem
-    // isso facilitará a implementação
-    void extrair_numeros(std::string string, int *numeros);
-    // essa função gerencia o processo de converção de uma linha em duas pilhas que seram processadas pela função calcular
-    void extrair_dados(std::string bruto);
     // converte a fila com os operando e operadores em duas pilhas separadas
-    QueueAr<int> *Infx2Posfx(QueueAr<int> *fila, StackINT pilha);
+    QueueAr<int> *Infx2Posfx(QueueAr<int> *fila);
+    // executa as operações aritiméticas e retorna o resultado
+    int AvalPosfixa(QueueAr<int> *fila);
 };
 
 class ERRO {
 public:
-    ERRO(int cod, int col) {codigo = cod; coluna = col;}
+    ERRO(int cod, int col = 0) {codigo = cod; coluna = col;}
     enum TYPE{
         CONSTANT_OUT = 1, //Um dos operandos da expressão está fora da faixa permitida.
         ILL_FORMED = 2, // Em alguma parte da expressão está faltando um operando ou existe algum operando em formato errado.
@@ -64,29 +62,31 @@ public:
         DIVISION_0 = 8, // Houve divisão cujo quociente é zero.
         OVERFLOW = 9    // Acontece quando uma operação dentro da expressão ou a expressao inteira estoura o limite das constantes numéricas
     };
-    std::string msg(int &col) {
+    std::string msg() {
         std::string mensagem;
+        std::ostringstream oss;
+        oss << this->coluna;
         switch(codigo) {
          case TYPE::CONSTANT_OUT:
-          mensagem = "Numeric constant out of range: column ";
+          mensagem = "Numeric constant out of range: column " + oss.str() + ".";
           break;
           case TYPE::ILL_FORMED:
-          mensagem = "Ill-formed expression or missing term detected: column ";
+          mensagem = "Ill-formed expression or missing term detected: column " + oss.str() + ".";
           break;
           case TYPE::INVALID_OPERAND:
-          mensagem = "Invalid operand: column ";
+          mensagem = "Invalid operand: column " + oss.str() + ".";
           break;
           case TYPE::EXTRANEOUS:
-          mensagem = "Extraneous symbol: column ";
+          mensagem = "Extraneous symbol: column " + oss.str() + ".";
           break;
           case TYPE::MISSMATCH_O:
-          mensagem = "Mismatch ’)’: column ";
+          mensagem = "Mismatch ’)’: column " + oss.str() + ".";
           break;
           case TYPE::MISSMATCH_C:
-          mensagem = "Missing closing ’)’ to match opening ’(’ at: column ";
+          mensagem = "Missing closing ’)’ to match opening ’(’ at: column " + oss.str() + ".";
           break;
           case TYPE::LOST_OPERATOR:
-          mensagem = "Lost operator: column ";
+          mensagem = "Lost operator: column " + oss.str() + ".";
           break;
           case TYPE::DIVISION_0:
           mensagem = "Division by zero!";
@@ -97,7 +97,6 @@ public:
           coluna = -1;
           break;
         }
-        col = coluna;
      return mensagem;
     }
 private:
