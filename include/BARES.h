@@ -80,10 +80,10 @@ public:
           mensagem = "Extraneous symbol: column " + oss.str() + ".";
           break;
           case TYPE::MISSMATCH_O:
-          mensagem = "Mismatch ’)’: column " + oss.str() + ".";
+          mensagem = "Mismatch \')\': column " + oss.str() + ".";
           break;
           case TYPE::MISSMATCH_C:
-          mensagem = "Missing closing ’)’ to match opening ’(’ at: column " + oss.str() + ".";
+          mensagem = "Missing closing \')\' to match opening \'(\' at: column " + oss.str() + ".";
           break;
           case TYPE::LOST_OPERATOR:
           mensagem = "Lost operator: column " + oss.str() + ".";

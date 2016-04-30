@@ -10,8 +10,8 @@ QueueAr<int>* BARES::Infx2Posfx(QueueAr<int> *fila) {
       fila_saida->enqueue(symb);
     }
     else {
-        while(!pilha.isEmpty() && pilha.top() >= symb){
-          if(pilha.top() >= symb) {
+        while(!pilha.isEmpty() && pilha.top() <= symb){
+          if(pilha.top() <= symb) {
             fila_saida->enqueue(pilha.pop());
           }
         }
@@ -27,7 +27,7 @@ int BARES::AvalPosfixa(QueueAr<int> *fila) {
  StackINT pilha;
  int operandoA, operandoB, resultado;
  int symb;
-  while(false /*!fila->isEmpty()*/) { // debug
+  while(!fila->isEmpty()) {
     symb = fila->dequeue();
     if(symb < 40000) {
       pilha.push(symb);
@@ -47,21 +47,29 @@ int BARES::AvalPosfixa(QueueAr<int> *fila) {
                 resultado = operandoA * operandoB;
             break;
             case BARES::simbolo_token::_DIVIDIR:
-                if(operandoB == 0) throw(ERRO(ERRO::TYPE::DIVISION_0));
+                if(operandoB == 0) {
+                    fila->makeEmpty(); // fila é um ponteiro alocado dinamicamente que se não for esvaziado vai dar erro
+                    throw(ERRO(ERRO::TYPE::DIVISION_0));
+                }
                 resultado = operandoA / operandoB;
             break;
             case BARES::simbolo_token::_RESTO:
                 resultado = operandoA % operandoB;
             break;
             case BARES::simbolo_token::_POTENCIA:
+              if(operandoB < 0) return 0;
+              else if(operandoB == 0) return 1;
+              else {
+                resultado = operandoA;
                 for(;operandoB > 1; operandoB--)
-                  resultado *= operandoA * operandoA;
+                  resultado *= operandoA;
+              }
             break;
         }
         pilha.push(resultado);
         }
     }
-    resultado = 35000; //pilha.pop(); // está dando erro de pilha vazia
+    resultado = pilha.pop();
     if(resultado > 32767) throw(ERRO(ERRO::TYPE::OVERFLOW));
     return resultado;
 }
@@ -72,7 +80,7 @@ void BARES::converter_bruto_fila(std::string bruto) {
     bool last_is_numeric = false; // guarda se o simbolo anterior é numero ou operador
     bool negativar = false;
     int escopo = 0; // controla a abertura e fechamento de parenteses
-     unsigned long int bk_inicio; // backup da variavel inicio que irá se perder, mas ainda precisará ser usada
+     unsigned long int x;
 
     while(inicio < bruto.size()) {
         if(bruto[inicio] == 32 || bruto[inicio] == 9) { // garantindo que espaços e tabulações seram ignorados
@@ -80,19 +88,20 @@ void BARES::converter_bruto_fila(std::string bruto) {
         }
         if(isdigit(bruto[inicio]) && inicio < bruto.size()) {
             if(last_is_numeric) throw(ERRO(ERRO::TYPE::EXTRANEOUS, inicio+1));
-            bk_inicio = inicio;
-            while(isdigit(bruto[inicio]) && inicio < bruto.size()) { // converter em numero
-                numero += (bruto[inicio] - '0');
+            x = inicio;
+            for(x = inicio;isdigit(bruto[x]) && x < bruto.size(); x++) { // converter em numero
+                numero += (bruto[x] - '0');
                 numero *= 10;
-                inicio++; // percorrendo até sair do numero
             }
             numero /= 10; // coriguindo a "volta extra"
-            if(numero > 32767) throw(ERRO(ERRO::TYPE::CONSTANT_OUT, bk_inicio)); // exeção prevenida
+            if(numero > 32767) throw(ERRO(ERRO::TYPE::CONSTANT_OUT, inicio+1)); // exeção prevenida
             if(negativar) {
                 negativar = false;
                 numero *= -1;
             }
+            inicio = x;
             this->simbolos->enqueue(numero); // pegando numero correspondente do vetor de numeros extraidos
+            numero = 0;
             last_is_numeric = true;
         }
         else if(inicio < bruto.size()){ // nesse caso deve ser um simbolo ou um caractere invalido
@@ -111,8 +120,8 @@ void BARES::converter_bruto_fila(std::string bruto) {
                     break;
                 case BARES::simbolo::NEGATIVO: // caso especial pois pode ser menos ou negativo
                 if(inicio == bruto.size()-1) throw(ERRO(ERRO::TYPE::LOST_OPERATOR, inicio+1)); //menos perdido no final
-                if(!last_is_numeric) negativar = true;
-                    this->simbolos->enqueue(BARES::simbolo_token::_SUBTRAIR);
+                   if(!last_is_numeric) negativar = true;
+                   else this->simbolos->enqueue(BARES::simbolo_token::_SUBTRAIR);
                     break;
                 case BARES::simbolo::MULTIPLICAR:
                 if(!last_is_numeric && (inicio == 0 || this->simbolos->getLast() != BARES::simbolo_token::_FECHAR)) throw(ERRO(ERRO::TYPE::LOST_OPERATOR, inicio+1));
@@ -166,7 +175,7 @@ std::string BARES::processar(std::string nome) {
    exit(0); // saida do programa por erro fatal
  }
  
-    QueueAr<int>  *posfix;
+    QueueAr<int>  *posfix = nullptr;
     long int ptr_interno = -1;
     long int ptr_final_interno;
     int *fila = new int[10000];
@@ -178,13 +187,15 @@ std::string BARES::processar(std::string nome) {
      while(!arquivo.fail()) { // esse loop vai percorrer linha a linha do arquivo
        std::getline(arquivo, linha); // lendo a linha e guardando na string linha
        if(linha == "") break;
-       
+       delete posfix;
+       posfix = nullptr;
        try {
        this->converter_bruto_fila(linha);
     // executando o processamento
 
-    for(; !this->simbolos->isEmpty(); capacidade++) fila[capacidade] = this->simbolos->dequeue();
+    for(capacidade = 0; !this->simbolos->isEmpty(); capacidade++) fila[capacidade] = this->simbolos->dequeue();
 
+     ptr_interno = -1;
     for(ptr_final_interno = 0; ptr_final_interno < capacidade && fila[ptr_final_interno] != BARES::simbolo_token::_FECHAR; ptr_final_interno++)
         if(fila[ptr_final_interno] == BARES::simbolo_token::_ABRIR)
             ptr_interno = ptr_final_interno;
@@ -193,21 +204,25 @@ std::string BARES::processar(std::string nome) {
         for(long int x = ptr_interno+1; fila[x] != BARES::simbolo_token::_FECHAR; x++) {
             auxiliar->enqueue(fila[x]);
         }
+
         posfix = this->Infx2Posfx(auxiliar);
 
         // processar posfix e recolocar no vetor
         resultado = this->AvalPosfixa(posfix);
+        delete posfix;
+        posfix = nullptr;
         fila[ptr_interno] = resultado;
-        for(long int x = ptr_interno+1; x < capacidade - (ptr_final_interno - ptr_interno) + 1;x++)
-            fila[x] = fila[x+(ptr_final_interno - ptr_interno) + 1];
-        capacidade = (ptr_final_interno - ptr_interno) + 1;
+        long int x = ptr_interno+1;
+        for(; (ptr_final_interno+1) + (x - (ptr_interno+1)) < capacidade;x++)
+            fila[x] = fila[(ptr_final_interno+1) + (x - (ptr_interno+1))];
+        capacidade -= (ptr_final_interno - ptr_interno);
         
         ptr_interno = -1;
        for(ptr_final_interno = 0; ptr_final_interno < capacidade && fila[ptr_final_interno] != BARES::simbolo_token::_FECHAR; ptr_final_interno++)
         if(fila[ptr_final_interno] == BARES::simbolo_token::_ABRIR)
             ptr_interno = ptr_final_interno;
         }
-    
+
       for(long int x = 0; x < capacidade; x++) {
             auxiliar->enqueue(fila[x]);
         }
